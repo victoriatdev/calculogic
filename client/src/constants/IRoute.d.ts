@@ -1,7 +1,9 @@
 import { ReactElement, ReactNode } from "react";
+import { RouteObject } from "react-router-dom";
 
 interface IRoute {
   path: string;
   element: ReactElement;
-  children?: IRoute[];
+  errorElement?: ReactElement;
+  children: RouteObject[];
 }

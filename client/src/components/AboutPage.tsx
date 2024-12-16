@@ -4,8 +4,7 @@ import Navbar from "./Navbar";
 const AboutPage = () => {
   return (
     <>
-      <Navbar />
-      <h1>Vite + React</h1>
+      <h1>About</h1>
       <div className="card"></div>
     </>
   );

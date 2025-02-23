@@ -1,0 +1,15 @@
+services:
+  server:
+    build:
+      context: ./server
+    container_name: fyp-server
+    hostname: fyp-server
+    ports:
+      - "1323:1323"
+  client:
+    build:
+      context: ./client
+    container_name: fyp-client
+    hostname: fyp-client
+    ports:
+      - "5173:5173"

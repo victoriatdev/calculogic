@@ -1,6 +1,3 @@
-import "../styles/App.css";
-import Navbar from "./Navbar";
-
 const AboutPage = () => {
   return (
     <>

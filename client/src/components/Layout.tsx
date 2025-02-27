@@ -3,12 +3,12 @@ import Navbar from "./Navbar";
 
 const Layout = () => {
   return (
-    <div>
+    <>
       <Navbar />
-      <main>
+      <main className="min-h-screen w-full flex items-center justify-center bg-(--flexoki-paper) dark:bg-(--flexoki-black)">
         <Outlet />
       </main>
-    </div>
+    </>
   );
 };
 

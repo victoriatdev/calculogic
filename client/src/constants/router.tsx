@@ -1,27 +1,15 @@
 import {
   createBrowserRouter,
-  createRoutesFromElements,
-  Route,
 } from "react-router-dom";
 
 import Layout from "../components/Layout";
 import Home from "../components/Home";
 import ErrorPage from "../components/ErrorPage";
 import AboutPage from "../components/AboutPage";
-
-import { ROUTES } from "./route";
-
-const routes = ROUTES.map((route) => {
-  return (
-    <Route
-      key={route.path}
-      path={route.path}
-      errorElement={route.errorElement}
-      element={route.element}
-      children={route.children}
-    />
-  );
-});
+import GlossaryPage from "../components/GlossaryPage";
+import NaturalDeduction from "../components/NaturalDeduction";
+import SequentCalculus from "../components/SequentCalculus";
+import CustomRuleset from "../components/CustomRuleset";
 
 export const router = createBrowserRouter([
   {
@@ -37,7 +25,22 @@ export const router = createBrowserRouter([
         path: "about",
         element: <AboutPage />,
       },
+      {
+        path: "glossary",
+        element: <GlossaryPage />,
+      },
+      {
+        path: "natural-deduction",
+        element: <NaturalDeduction />,
+      },
+      {
+        path: "sequent-calculus",
+        element: <SequentCalculus />,
+      },
+      {
+        path: "custom",
+        element: <CustomRuleset />,
+      }
     ],
   },
 ]);
-//export const router = createBrowserRouter(createRoutesFromElements(routes));

@@ -6,15 +6,10 @@ Welcome to *NAME* - a tool designed for people interested in logic to prove logi
 
 `;
 
-export default function Home() {
+export default function SequentCalculus() {
   return (
-    <div className="flex items-center flex-wrap">
-      <div className="flex">
-        Calculogic
-      </div>
-      <div className="flex">
-        <Markdown>{markdown}</Markdown>
-      </div>
+    <div>
+      <Markdown>{markdown}</Markdown>
     </div>
   );
 }

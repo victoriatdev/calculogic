@@ -14,8 +14,26 @@ If you want to make hot-reloading changes to the project:
 # How to run
 Clone the repository, open a terminal at the root directory and run:
 ```bash
-docker compose up
+docker compose up --build
 ```
+
+There is also a requirement to have some environment variables set for the server in an .env file to avoid leaking secrets. These variables are:
+```yaml
+DB_HOST=<name>
+DB_PORT=3306
+DB_USER=<user>
+DB_PASSWORD=<password>
+DB_NAME=<name>
+```
+
+There is also a requirement for there to be a `db.env` file in the root directory next to the `docker-compose.yml` file which contains database configuration. These need to be the following:
+```yaml
+MYSQL_DATABASE=<DB_NAME>
+MYSQL_USER=<DB_USER>
+MYSQL_PASSWORD=<DB_PASSWORD>
+MYSQL_ROOT_PASSWORD=<root password>
+```
+
 
 To run the individual services separately outside of docker containers, perform the following:
 

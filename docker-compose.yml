@@ -4,6 +4,8 @@ services:
       context: ./server
     container_name: fyp-server
     hostname: fyp-server
+    env_file:
+      - "./server/.env"
     ports:
       - "1323:1323"
   client:

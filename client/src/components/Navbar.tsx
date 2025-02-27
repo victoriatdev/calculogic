@@ -24,10 +24,6 @@ const navLinks : NavLinkType[] = [
       name: "Glossary",
       path: "/glossary",
     },
-    {
-      name: "About",
-      path: "/about",
-    },
   ];
 
 const Navbar = () => {

@@ -1,14 +1,19 @@
-export default function NaturalDeduction() {
+import SelfSolveToggle from "./SelfSolveToggle";
+
+const NaturalDeduction = () => {
+  
   return (
-    <div className="flex">
-      // Container for Explanation
-      <header className="flex">
-
-      </header>
-      // Global Rendering tool for the Logical formulae
+    // global container
+    <div className="w-full flex items-center justify-between px-8 text-(--color-tx-normal)">
       <div>
-
+        Cached Examples 
       </div>
+      <div>
+        Proof to Solve
+      </div>
+      <SelfSolveToggle />
     </div>
   );
 }
+
+export default NaturalDeduction;

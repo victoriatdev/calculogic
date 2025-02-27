@@ -2,17 +2,17 @@ import Markdown from "react-markdown";
 
 const markdown = `# Hello!
 
-Welcome to *NAME* - a tool designed for people interested in logic to prove logical formulae in an easy and understanding way.
+Welcome to *Calculogic* - a tool designed for people interested in logic to prove logical formulae in an easy and understanding way.
 
 `;
 
 export default function Home() {
   return (
-    <div className="flex items-center flex-wrap">
+    <div className="flex items-center flex-col justify-between gap-20 text-(--color-tx-normal)">
       <div className="flex">
         Calculogic
       </div>
-      <div className="flex">
+      <div>
         <Markdown>{markdown}</Markdown>
       </div>
     </div>

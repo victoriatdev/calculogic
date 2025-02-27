@@ -1,15 +1,18 @@
-import Markdown from "react-markdown";
+import SelfSolveToggle from "./SelfSolveToggle";
 
-const markdown = `# Hello!
-
-Welcome to *NAME* - a tool designed for people interested in logic to prove logical formulae in an easy and understanding way.
-
-`;
-
-export default function SequentCalculus() {
+const SequentCalculus = () => {
   return (
-    <div>
-      <Markdown>{markdown}</Markdown>
+    // global container
+    <div title="Sequent Calculus" className="w-full flex items-center justify-between px-8 text-(--color-tx-normal)">
+      <div>
+        Cached Examples 
+      </div>
+      <div>
+        Proof to Solve
+      </div>
+      <SelfSolveToggle />
     </div>
   );
 }
+
+export default SequentCalculus;

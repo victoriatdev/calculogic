@@ -1,14 +1,14 @@
-FROM golang:latest
+FROM golang:alpine as build-env
 
+WORKDIR /go/src
+COPY . /go/src/fyp-server
+RUN cd /go/src/fyp-server && go build .
+
+FROM alpine
 WORKDIR /app
-
-COPY go.* ./
-RUN go mod download
-
-COPY *.go ./
-
-RUN CGO_ENABLED=0 GOOS=linux go build -o /fyp-server
+COPY --from=build-env /go/src/fyp-server/fyp-server /app
+COPY .env /app
 
 EXPOSE 8080
 
-CMD ["/fyp-server"]
+CMD ["./fyp-server"]

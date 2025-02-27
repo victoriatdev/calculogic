@@ -2,43 +2,34 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-//	"os"
 
-	"github.com/joho/godotenv"
+	"fyp-server/cmd/handlers"
+	"fyp-server/cmd/storage"
+
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
-//	setConfig()
-
 	fmt.Println("Starting server...")
 
 	e := echo.New()
 	e.HideBanner = true
+	e.Use(handlers.LogRequest)
 
-	//test_env := os.Getenv("TEST_SECRET")
-	//fmt.Println(test_env)
+	// CORS
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+		},
+	}))
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
+	e.GET("/", handlers.Home)
 
-	e.GET("/users/:id", getUser)
+	storage.InitDatabase()
 
 	e.Logger.Fatal(e.Start(":1323"))
-}
-
-func getUser(c echo.Context) error {
-	id := c.Param("id")
-	return c.String(http.StatusOK, id)
-}
-
-func setConfig() {
-	envError := godotenv.Load(".env")
-
-	if envError != nil {
-		log.Fatal("Error loading .env file.")
-	}
 }

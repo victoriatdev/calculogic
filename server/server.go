@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"fyp-server/cmd/handlers"
-	"fyp-server/cmd/storage"
+	"fyp-server/cmd/logic"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -25,11 +25,17 @@ func main() {
 			echo.HeaderContentType,
 			echo.HeaderAccept,
 		},
+		AllowMethods: []string{echo.GET, echo.POST},
 	}))
 
 	e.GET("/", handlers.Home)
 
-	storage.InitDatabase()
+	e.GET("/natural-deduction", handlers.LogicRoot)
+	e.POST("/natural-deduction", logic.NaturalDeductionRoot)
+
+	e.POST("/sequent-calculus", logic.SequentCalculusRoot)
+
+	//storage.InitDatabase()
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

@@ -1,5 +1,13 @@
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
+github.com/adamay909/logicTools v0.0.0-20240404182633-8f42f518a3d6 h1:jfQLA3lBoQioRy8ghVxJhreMgPq2E8L4SVOCw1+X2e4=
+github.com/adamay909/logicTools v0.0.0-20240404182633-8f42f518a3d6/go.mod h1:F0f+i1/MqXYmUITpeafkFUPZuNy0OfQsqkZtz4Qb4kg=
+github.com/darylnwk/mathtoken v1.1.0 h1:2SF5BKLmB/b/X03Hbuk/XLc6c5Q72ug+TEzVrRh3q6o=
+github.com/darylnwk/mathtoken v1.1.0/go.mod h1:qulWjgHz9xXPryIhyO7xGy7CB85ZO2sLzCXwjVaEjzM=
+github.com/darylnwk/postfix v1.0.0 h1:A644wbGWh0Z5bLTDXrJ2jpdLU+mASX4SVnmTq4sZ+m4=
+github.com/darylnwk/postfix v1.0.0/go.mod h1:gcB00UfmzLzgwqxAoJGc/SJE+k8DDPpRbjf2MYAK/PQ=
+github.com/darylnwk/stack v1.1.0 h1:SUMYlQfcXTwO3wuohwYM09naTj872yyTzi/NkRYKonM=
+github.com/darylnwk/stack v1.1.0/go.mod h1:NPvzFkCFcFO34GTbGyObvTwb0hmFJVz0yrcrgUn2iKA=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-sql-driver/mysql v1.9.0 h1:Y0zIbQXhQKmQgTp44Y1dp3wTXcn804QoTptLZT1vtvo=

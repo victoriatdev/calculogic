@@ -33,7 +33,7 @@ func main() {
 	e.GET("/natural-deduction", handlers.LogicRoot)
 	e.POST("/natural-deduction", logic.NaturalDeductionRoot)
 
-	e.POST("/sequent-calculus", logic.SequentCalculusRoot)
+	e.POST("/proof/sequent-calculus", handlers.ProveSequentCalculus)
 
 	//storage.InitDatabase()
 

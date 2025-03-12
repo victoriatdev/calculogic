@@ -4,7 +4,6 @@ go 1.23.5
 
 require (
 	github.com/adamay909/logicTools v0.0.0-20240404182633-8f42f518a3d6
-	github.com/darylnwk/postfix v1.0.0
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
@@ -12,8 +11,6 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/darylnwk/mathtoken v1.1.0 // indirect
-	github.com/darylnwk/stack v1.1.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

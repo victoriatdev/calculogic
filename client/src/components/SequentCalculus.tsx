@@ -76,15 +76,6 @@ const t2 = {
               id: v4(),
               proof: [],
             },
-            {
-              sequent: {
-                Antecedent: "p,q",
-                Succedent: "q",
-                InferenceRule: "a",
-              },
-              id: v4(),
-              proof: [],
-            },
           ],
         },
       ],
@@ -104,8 +95,8 @@ const SequentCalculus = () => {
     <div className="w-full flex items-center justify-between px-8 text-(--color-tx-normal)">
       <div>Cached Examples</div>
       <div>
-        <SubmitProof proofTree={tree} passToChild={handleChildData} />
-        <RenderSC proofTree={tree} />
+        <SubmitProof proofTree={t2} passToChild={handleChildData} />
+        <RenderSC proofTree={t2} />
       </div>
       <SelfSolveToggle />
     </div>

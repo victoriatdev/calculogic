@@ -29,6 +29,10 @@ class ProofNode {
     }
   }
 
+  public setSequent(data: Sequent) {
+    this.sequent = data;
+  }
+
   public addChild(child: ProofNode) {
     let newNode = new ProofNode(child);
     newNode.parentNode = this;

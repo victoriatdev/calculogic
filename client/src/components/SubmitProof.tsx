@@ -13,9 +13,13 @@ const SubmitProof = ({ proofTree, passToChild }: any) => {
   const handleSubmit = (e: any) => {
     e.preventDefault();
 
-    fetch(`http://localhost:1323/sequent-calculus`, {
+    const tmp = {
+      formula: "⊢A→A∧B"
+    }
+
+    fetch(`http://localhost:1323/proof/sequent-calculus`, {
       method: "POST",
-      body: JSON.stringify(proofTree),
+      body: JSON.stringify({"formula": inputtedProof}),
       headers: {
         "Content-Type": "application/json",
       },

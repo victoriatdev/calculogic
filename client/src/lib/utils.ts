@@ -46,5 +46,5 @@ export const formatInput = (input: string) => {
     );
   }
 
-  return formattedInput;
+  return formattedInput.toUpperCase();
 };

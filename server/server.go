@@ -30,7 +30,7 @@ func main() {
 
 	e.GET("/", handlers.Home)
 
-	e.GET("/natural-deduction", handlers.LogicRoot)
+	// e.GET("/natural-deduction", handlers.LogicRoot)
 	e.POST("/natural-deduction", logic.NaturalDeductionRoot)
 
 	e.POST("/proof/sequent-calculus", handlers.ProveSequentCalculus)

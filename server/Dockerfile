@@ -1,4 +1,4 @@
-FROM golang:alpine as build-env
+FROM golang:alpine AS build-env
 
 WORKDIR /go/src
 COPY . /go/src/fyp-server

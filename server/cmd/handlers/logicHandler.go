@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"fyp-server/cmd/logic"
 	"fyp-server/collections"
@@ -22,235 +23,6 @@ type SCFormula struct {
 	Formula string `json:"formula"`
 }
 
-func LogicRoot(c echo.Context) error {
-
-	// b := []string{"p;p;a", "q;q;a", "p,q;Kpq;1,2,ki", "p,q;K(Kpq)p;1,3,ki"}
-	// //   [p;p;A q;q;A p,q;Kpq;1,2,ki]
-	// gentzen.SetDebug(true)
-	// //gentzen.SetStandardPolish(false)
-	// g := gentzen.CheckDeriv(b, 1)
-
-	// fmt.Print(gentzen.ShowLog())
-	// // fmt.Print(gentzen.PrintDerivation(b,1))
-	// fmt.Print(gentzen.ShowDebugLog())
-	// fmt.Print(g)
-
-	return c.String(http.StatusOK, "Root logic handler route")
-}
-
-// DONE
-// func applyAssumption(sequent [][]string) bool {
-
-// 	// check left and right arrays for a common singular element without a logical operator
-// 	var antecedent = sequent[0]
-// 	var succedent = sequent[1]
-
-// 	if slices.Contains(antecedent, "→") || slices.Contains(antecedent, "¬") ||
-// 		slices.Contains(antecedent, "∧") || slices.Contains(antecedent, "∨") {
-// 		return false
-// 	}
-
-// 	if slices.Contains(succedent, "→") || slices.Contains(succedent, "¬") ||
-// 		slices.Contains(succedent, "∧") || slices.Contains(succedent, "∨") {
-// 		return false
-// 	}
-
-// 	for i := range len(antecedent) { //[Q,P]
-// 		if slices.Contains(succedent, antecedent[i]) {
-// 			return true
-// 		}
-// 	}
-
-// 	return false
-// }
-
-// IMPLICATION RULES
-func applyImplicationRight(sequent [][]string) [][]string {
-
-	var antecedent = sequent[0]
-	var succedent = sequent[1]
-
-	// determine succedent values
-	// [[], [->, P, P]]
-
-	if !slices.Contains(succedent, "→") {
-		return sequent
-	}
-
-	implicationOperator := slices.Index(succedent, "→")
-	leftMost := succedent[implicationOperator+1]
-	rightMost := succedent[implicationOperator+2:]
-
-	// prepend leftmost to antecedent via composite literal
-
-	antecedent = append([]string{leftMost}, antecedent...)
-
-	sequent = append([][]string{}, antecedent, rightMost)
-
-	return sequent
-}
-
-func applyImplicationLeft(sequent [][]string) ([][]string, [][]string) {
-
-	antecedent := sequent[0]
-	succedent := sequent[1]
-
-	if !slices.Contains(antecedent, "→") {
-		return sequent, [][]string{}
-	}
-
-	implicationOperator := slices.Index(antecedent, "→")
-	leftMost := antecedent[implicationOperator+1]
-	rightMost := antecedent[implicationOperator+2]
-
-	// build left
-	leftSuccedent := append([]string{leftMost}, succedent...)
-	leftAntecedent := append([]string{}, antecedent[:implicationOperator]...)
-	leftSequent := append([][]string{}, leftAntecedent, leftSuccedent)
-
-	// build
-	rightSuccedent := append([]string{}, succedent...)
-	rightAntecedent := append(antecedent[:implicationOperator], rightMost)
-	rightSequent := append([][]string{}, rightAntecedent, rightSuccedent)
-
-	return leftSequent, rightSequent
-}
-
-// NEGATION RULES
-func applyNegationRight(sequent [][]string) [][]string {
-
-	var gamma = sequent[0]
-	var succedent = sequent[1]
-
-	if !slices.Contains(succedent, "¬") {
-		return sequent
-	}
-
-	negationOperator := slices.Index(succedent, "¬")
-	leftMost := succedent[negationOperator+1]
-	delta := succedent[negationOperator+2:]
-
-	antecedent := append([]string{leftMost}, gamma...)
-
-	sequent = append([][]string{}, antecedent, delta)
-
-	return sequent
-}
-
-func applyNegationLeft(sequent [][]string) [][]string {
-
-	var antecedent = sequent[0]
-	var delta = sequent[1]
-
-	if !slices.Contains(antecedent, "¬") {
-		return sequent
-	}
-
-	negationOperator := slices.Index(antecedent, "¬")
-	rightMost := antecedent[negationOperator+1]
-	gamma := antecedent[:negationOperator]
-
-	succedent := append([]string{rightMost}, delta...)
-
-	sequent = append([][]string{}, gamma, succedent)
-
-	return sequent
-}
-
-// CONJUNCTION RULES
-func applyConjunctionRight(sequent [][]string) ([][]string, [][]string) {
-
-	gamma := sequent[0]
-	succedent := sequent[1]
-
-	if !slices.Contains(succedent, "∧") {
-		return sequent, [][]string{}
-	}
-
-	conjunctionOperator := slices.Index(succedent, "∧")
-	leftMost := succedent[conjunctionOperator+1]
-	rightMost := succedent[conjunctionOperator+2]
-	delta := succedent[conjunctionOperator+3:]
-
-	// build leftSequent
-
-	leftSuccedent := append([]string{leftMost}, delta...)
-	leftSequent := append([][]string{}, gamma, leftSuccedent)
-
-	// build rightSequent
-
-	rightSuccedent := append([]string{rightMost}, delta...)
-	rightSequent := append([][]string{}, gamma, rightSuccedent)
-
-	return leftSequent, rightSequent
-}
-
-func applyConjunctionLeft(sequent [][]string) [][]string {
-
-	antecedent := sequent[0]
-	delta := sequent[1]
-
-	if !slices.Contains(antecedent, "∧") {
-		return sequent
-	}
-
-	conjunctionOperator := slices.Index(antecedent, "∧")
-
-	tmpAntecedent := append([]string{}, antecedent[:conjunctionOperator]...)
-	fmt.Printf("%v\n", tmpAntecedent)
-	tmpAntecedent = append(tmpAntecedent, antecedent[conjunctionOperator+1:]...)
-
-	sequent = append([][]string{}, tmpAntecedent, delta)
-
-	return sequent
-}
-
-// DISJUNCTION LEFT
-func applyDisjunctionLeft(sequent [][]string) ([][]string, [][]string) {
-
-	antecedent := sequent[0]
-	delta := sequent[1]
-
-	if !slices.Contains(antecedent, "∨") {
-		return sequent, [][]string{}
-	}
-
-	disjunctionOperator := slices.Index(antecedent, "∨")
-	leftMost := antecedent[disjunctionOperator+1]
-	rightMost := antecedent[disjunctionOperator+2]
-	gamma := antecedent[:disjunctionOperator]
-
-	// build leftSequent
-	leftAntecedent := append(append([]string{}, gamma...), leftMost)
-	leftSequent := append([][]string{}, leftAntecedent, delta)
-
-	// build rightSequent
-
-	rightAntecedent := append(append([]string{}, gamma...), rightMost)
-	rightSequent := append([][]string{}, rightAntecedent, delta)
-
-	return leftSequent, rightSequent
-}
-
-func applyDisjunctionRight(sequent [][]string) [][]string {
-	gamma := sequent[0]
-	succedent := sequent[1]
-
-	if !slices.Contains(succedent, "∨") {
-		return sequent
-	}
-
-	conjunctionOperator := slices.Index(succedent, "∨")
-
-	tmpSuccedent := append([]string{}, succedent[:conjunctionOperator]...)
-
-	tmpSuccedent = append(tmpSuccedent, succedent[conjunctionOperator+1:]...)
-
-	sequent = append([][]string{}, gamma, tmpSuccedent)
-
-	return sequent
-}
-
 func ProveSequentCalculus(c echo.Context) error {
 
 	sequentCalculusFormulae := new(SCFormula)
@@ -262,20 +34,133 @@ func ProveSequentCalculus(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "The provided formula is empty.")
 	}
 
+	fmt.Println(sequentCalculusFormulae.Formula)
+
 	isProvable, e := AttemptSequentCalculusProof(sequentCalculusFormulae.Formula)
 
-	if !isProvable {
-		return c.String(http.StatusUnprocessableEntity, "The formula could not be proven"+e.Error())
+	if e != nil {
+		return c.String(http.StatusInternalServerError, "Server error: "+e.Error())
 	}
 
-	return c.String(http.StatusAccepted, "Formula proven.")
+	if !isProvable {
+		return c.String(http.StatusUnprocessableEntity, "The formula could not be proven.")
+	}
+
+	return c.String(http.StatusOK, "Formula proven.")
+}
+
+func AttemptSequentCalculusProof2(sequent [][]string) (bool, error) {
+	// base case: leaf?
+	// antecedent := sequent[0]
+	succedent := sequent[1]
+	fmt.Printf("Current sequent: %v\n", sequent)
+
+	if logic.ApplyAssumption(sequent) {
+		fmt.Println("Assumption applied")
+		// return something???
+		return true, nil
+	}
+
+	if len(succedent) == 0 {
+		return false, errors.New("succedent is empty")
+	}
+
+	// recursive case: there is a still an operator to be attempted
+	if succedent[0] == logic.Implication {
+		fmt.Println("Implication detected")
+		childSequent, childSequentError := logic.ApplyImplicationRight(sequent)
+
+		if childSequentError != nil {
+			return false, childSequentError
+		}
+
+		p, e := AttemptSequentCalculusProof2(childSequent)
+		if e != nil {
+			return false, e
+		}
+		return p, nil
+	}
+
+	if succedent[0] == logic.Conjunction {
+		fmt.Println("Conjunction detected")
+		childSequent1, childSequent2, e := logic.ApplyConjunctionRight(sequent)
+
+		if e != nil {
+			return false, e
+		}
+
+		p1, e1 := AttemptSequentCalculusProof2(childSequent1)
+		p2, e2 := AttemptSequentCalculusProof2(childSequent2)
+		if e1 != nil {
+			return false, e1
+		}
+		if e1 != nil {
+			return false, e2
+		}
+		return p1 && p2, nil
+	}
+
+	if succedent[0] == logic.Disjunction {
+		childSequent := logic.ApplyDisjunctionRight(sequent)
+		p, e := AttemptSequentCalculusProof2(childSequent)
+		if e != nil {
+			return false, e
+		}
+		return p, nil
+	}
+
+	if slices.Contains(succedent, logic.Negation) {
+		fmt.Println("Negation detected")
+		childSequent := logic.ApplyNegationRight(sequent)
+		p, e := AttemptSequentCalculusProof2(childSequent)
+
+		if e != nil {
+			return false, e
+		}
+
+		return p, nil
+
+	}
+
+	return false, errors.New("unprovable formula")
 }
 
 func AttemptSequentCalculusProof(formula string) (isProvable bool, e error) {
 
-	formulaListv, e := buildFormulaTokenList(cleanString(formula))
+	fmt.Println(formula)
 
-	fmt.Printf("%v\n", formulaListv)
+	formulaList := [][]string{}
+
+	if slices.Contains(strings.Split(formula, ""), logic.Turnstile) {
+		splitFormula := strings.Split(formula, "")
+		turnstileIndex := slices.Index(splitFormula, logic.Turnstile)
+		antecedentFormula, antecedentFormulaError := buildFormulaTokenList(cleanString(strings.Join(splitFormula[:turnstileIndex], "")))
+
+		if antecedentFormulaError != nil {
+			return false, antecedentFormulaError
+		}
+
+		succedentFormula, succedentFormulaError := buildFormulaTokenList(cleanString(strings.Join(splitFormula[turnstileIndex+1:], "")))
+
+		if succedentFormulaError != nil {
+			return false, succedentFormulaError
+		}
+
+		formulaList = append(formulaList, antecedentFormula, succedentFormula)
+	} else {
+		formulaListv, e := buildFormulaTokenList(cleanString(formula))
+		// fmt.Printf("%v\n", formulaListv)
+
+		if e != nil {
+			return false, e
+		}
+
+		formulaList = append([][]string{}, []string{}, formulaListv)
+	}
+
+	fmt.Printf("%v\n", formulaList)
+
+	// fmt.Printf("%v\n", formulaListv)
 	// formulaList := append([][]string{}, []string{}, formulaListv)
 
 	// now that we have the string list, need to prefix it? DONE
@@ -303,6 +188,17 @@ func AttemptSequentCalculusProof(formula string) (isProvable bool, e error) {
 				i: [[A], [^,A,B]]
 				o: [[A,]]
 
+		now that we have a structure for the sequent (i.e [[A],[S]]) we can abstract the type out to have:
+		{
+			sequent: [[A],[S]]
+			inferenceRule: enum? f
+		}
+
+		sequent : Sequent
+		sequent.data = [[],[]]
+
+		might help when serialising the data further on for displaying the proof?
+
 
 
 		N1 [[],[->,P,->,Q,->,^,P,Q]] prefix conversion only happens once for succedent
@@ -322,7 +218,7 @@ func AttemptSequentCalculusProof(formula string) (isProvable bool, e error) {
 	// sequent := [][]string{{"A"}, {"∧", "P", "Q", "B"}}
 	// sequent := [][]string{{}, {"→", "P", "→", "Q", "∧", "P", "Q"}}
 	// sequent := [][]string{{"Q", "P"}, {"∧", "P", "Q", "R"}}
-	sequent := [][]string{{"A", "∨", "P", "Q"}, {"B"}}
+	// sequent := [][]string{{"A", "∨", "P", "Q"}, {"B"}}
 	// sequent := [][]string{{}, {"¬", "A", "A"}}
 	// sequent := [][]string{{"P", "¬", "Q"}, {"P"}}
 	// sequent := [][]string{{"A", "∧", "A", "B"}, {"A"}}
@@ -338,40 +234,54 @@ func AttemptSequentCalculusProof(formula string) (isProvable bool, e error) {
 	// test1 := applyAssumption(test1v)
 	// test2 := applyAssumption(test2v)
 
-	fmt.Printf("Testing on: %v\n", sequent)
+	// P -> Q -> P^Q
 
-	logic.ApplyAssumption(sequent)
+	// test1, test2 := logic.ApplyConjunctionRight(logic.ApplyImplicationRight(logic.ApplyImplicationRight(sequent)))
 
-	test1, test2 := applyDisjunctionLeft(sequent)
+	fmt.Printf("Testing on: %v\n", formulaList)
 
-	fmt.Printf("Left: %v\n", test1)
-	fmt.Printf("Right: %v\n", test2)
+	// fmt.Printf("Left: %v\n", test1)
+	// fmt.Printf("Right: %v\n", test2)
 	// fmt.Printf("Test on %v: %v and %v\n", sequent, test1, test2)
 
 	// verify that the tree has no false assumptions
 	// if not, then isProvable = true
 	// else isProvable = false
 
-	isProvable = true
+	isProvable, e = AttemptSequentCalculusProof2(formulaList)
+	fmt.Printf("isProvable: %v\n", isProvable)
 
 	return isProvable, e
 }
 
+// add support to flip brackets [ ( -> X -> )  ]
 func buildFormulaTokenList(s string) (tokenList []string, e error) {
 	tokenList = strings.Split(s, "")
 
 	// prefix
 	slices.Reverse(tokenList)
+
+	reversed := strings.Join(tokenList, "")
+	reversed = strings.ReplaceAll(reversed, "(", "%")
+	reversed = strings.ReplaceAll(reversed, ")", "(")
+	reversed = strings.ReplaceAll(reversed, "%", ")")
+	tokenList = strings.Split(reversed, "")
+
+	fmt.Println(tokenList)
+
 	tokenList = convertToPostfix(tokenList)
+
+	postfix := strings.Join(tokenList, "")
+	postfix = strings.ReplaceAll(postfix, "(", "%")
+	postfix = strings.ReplaceAll(postfix, ")", "(")
+	postfix = strings.ReplaceAll(postfix, "%", ")")
+	tokenList = strings.Split(postfix, "")
+
 	slices.Reverse(tokenList)
 
-	for i := range len(tokenList) {
-		if !isLogicalOperator(tokenList[i]) {
-			// This is saying there is not
-		}
-	}
+	fmt.Println(tokenList)
 
-	return
+	return tokenList, e
 }
 
 func isLogicalOperator(s string) bool {
@@ -400,9 +310,13 @@ func determineOperatorPrecedence(operator string) int {
 	return -1
 }
 
+// TODO: Add bracket support
+// Use (A->B)->A for this
+// -(-AB)A
 func convertToPostfix(sList []string) []string {
 	stack := new(collections.Stack)
 	postfix := []string{}
+	fmt.Println(sList)
 
 	for i := range len(sList) {
 		re := regexp.MustCompile("[A-Z]")
@@ -413,10 +327,13 @@ func convertToPostfix(sList []string) []string {
 			// fmt.Println(postfix)
 		} else if sList[i] == "(" {
 			stack.Push(sList[i])
+			fmt.Println(stack.Top())
 		} else if sList[i] == ")" {
 			for !stack.IsEmpty() && stack.Top() != "(" {
 				postfix = append(postfix, stack.Pop().(string))
 			}
+			fmt.Println(stack.Top())
+			// postfix = append(postfix, stack.Pop().(string))
 			stack.Pop()
 		} else {
 			// fmt.Println("operator")
@@ -425,6 +342,7 @@ func convertToPostfix(sList []string) []string {
 				// fmt.Println(postfix)
 			}
 			stack.Push(sList[i])
+			fmt.Println(stack.Top())
 		}
 	}
 
@@ -439,10 +357,12 @@ func convertToPostfix(sList []string) []string {
 
 // clean string by removing any quotes, spaces or tabs
 // can also remove brackets because they dont actually affect "precedence"
+// brackets cant be taken away because we cannot condense expressions inside brackets
+// i.e: for |- (p^q) -> p; we cannot condense p^q first without doing the ->R to split it into p^q |- p
 func cleanString(s string) string {
 	s = strings.ReplaceAll(s, " ", "")
-	s = strings.ReplaceAll(s, "(", "")
-	s = strings.ReplaceAll(s, ")", "")
+	// s = strings.ReplaceAll(s, "(", ")")
+	// s = strings.ReplaceAll(s, ")", "(")
 
 	return s
 }

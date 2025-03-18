@@ -77,7 +77,9 @@ const RenderSC = ({ proofTree }: any) => {
   // build top level node last
 
   return (
-    <div>{tree && <TreeNode proofTree={tree} key={tree.id} width={100} />}</div>
+    <div className="border rounded-sm w-full h-full">
+      {tree && <TreeNode proofTree={tree} key={tree.id} width={100} />}
+    </div>
   );
 };
 

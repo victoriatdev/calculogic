@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCheckCircle } from "react-icons/fa";
+import Tooltip from "./Tooltip";
 
 const SelfSolveToggle = () => {
 
@@ -9,18 +10,24 @@ const SelfSolveToggle = () => {
         return initialValue || false;
     });
 
+    const tooltipText : string = "This toggle will toggle functionality to send only the topmost level of sequents over to the server to prove and 'step-through' the proof."
+
     useEffect(() => {
         localStorage.setItem("self-solve-enabled", JSON.stringify(selfSolve));
     });
 
     return (
-        <div className="flex flex-col items-center"> 
-            Enable Self-Solve?
+        <div className="flex w-1/3 flex-col items-center"> 
+            <div className="flex justify-between">
+                <span>Enable Self-Solve?</span>
+                <Tooltip text={tooltipText}/>
+            </div>
             <button aria-checked={selfSolve} className="text-(--color-ui-normal) aria-checked:text-(--color-gr) hover:text-(--color-action)" onClick={() => {
                 setSelfSolve(!selfSolve);
             }}>
                 <FaCheckCircle />
             </button>
+            
         </div>
     )
 }

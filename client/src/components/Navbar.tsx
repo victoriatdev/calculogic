@@ -28,7 +28,7 @@ const navLinks : NavLinkType[] = [
 
 const Navbar = () => {
   return (
-      <header className="fixed w-full px-8 shadow-xs shadow-neutral-500 h-(--navbar-height) flex items-center bg-(--color-bg-primary)">
+      <header className="w-full shadow-sm px-8 border-b border-(--color-tx-normal) h-(--navbar-height) flex items-center bg-(--color-bg-primary)">
         <nav className="flex justify-between items-center w-full text-(--color-tx-normal)">
           <NavLink to="/" className="font-bold">
             Home

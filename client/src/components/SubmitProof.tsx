@@ -1,29 +1,30 @@
 import { useState } from "react";
-import { GentzenTree, ProofNode, type Sequent } from "./GentzenTree";
+import { ProofNode } from "./GentzenTree";
 import { getEnumKeys, InferenceRule } from "../types/LogicalRules";
-import RenderSC from "./RenderSC";
-import { v4 } from "uuid";
 import { formatInput } from "../lib/utils";
 
-const SubmitProof = ({ proofTree, passToChild }: any) => {
-  const [inputtedProof, setInputtedProof] = useState("");
+const SubmitProof = ({ proofTree, passToChild, setRequestStatus, handleLoadExpression,  expressionToLoad }: any) => {
+  // const [inputtedProof, setInputtedProof] = useState("");
   // const [tree, setTree] = useState<ProofNode>();
   const [rule, setRule] = useState<InferenceRule>(InferenceRule.ASSUMPTION);
 
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-
-    const tmp = {
-      formula: "⊢A→A∧B"
-    }
-
-    fetch(`http://localhost:1323/proof/sequent-calculus`, {
+  const handleSubmit = async () => {
+    const res = await fetch(`http://localhost:1323/proof/sequent-calculus`, {
       method: "POST",
-      body: JSON.stringify({"formula": inputtedProof}),
+      body: JSON.stringify({"formula": expressionToLoad}),
       headers: {
         "Content-Type": "application/json",
       },
     });
+
+    if (!res.ok) {
+      setRequestStatus("fail")
+    } else if (res.status == 400) {
+      setRequestStatus("fail")
+    } else {
+      setRequestStatus("proven")
+    }
+
   };
 
   const handleKeyDown = (event: any) => {
@@ -33,11 +34,11 @@ const SubmitProof = ({ proofTree, passToChild }: any) => {
   };
 
   const handleInput = (input) => {
-    setInputtedProof(formatInput(input.target.value));
+    handleLoadExpression(input)
   };
 
   const handleAdd = () => {
-    const splitProof = inputtedProof.split(String.fromCodePoint(8866));
+    const splitProof = expressionToLoad.split(String.fromCodePoint(8866));
     if (!splitProof[1] || !splitProof[0]) {
       return;
     }
@@ -63,19 +64,18 @@ const SubmitProof = ({ proofTree, passToChild }: any) => {
 
     // console.log(proofTree);
 
-    setInputtedProof("");
+    handleLoadExpression("");
   };
 
   return (
-    <div>
+    <div className="w-full">
       <label htmlFor="proof" className="block text-(--color-tx-normal)">
         Proof to Solve:
-        {String.fromCodePoint(8594)}
       </label>
       <div className="mt-2">
         <AddItem
-          inputtedProof={inputtedProof}
-          onChange={(input) => handleInput(input)}
+          inputtedProof={expressionToLoad}
+          onChange={(input) => handleInput(input.target.value)}
           onAdd={handleAdd}
           handleKeyDown={handleKeyDown}
           setRule={setRule}
@@ -92,20 +92,21 @@ const AddItem = ({
   inputtedProof,
   handleKeyDown,
   setRule,
-  handleSubmit,
+  handleSubmit
 }) => {
   return (
-    <div className="flex items-center rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-indigo-600">
-      <input
-        id="proof"
-        name="proof"
-        type="text"
-        value={inputtedProof}
-        onChange={onChange}
-        onKeyDown={handleKeyDown}
-        className="block min-w-0 grow py-1.5 pr-3 pl-1 text-base text-(--color-tx-normal) focus:outline-none"
-      ></input>
-      <div className="grid shrink-0 grid-cols-1 focus-within:relative">
+    <div className="flex flex-col items-center">
+      <div className="w-full rounded-md bg-white pl-3 outline-1 -outline-offset-1 outline-gray-300 has-[input:focus-within]:outline-2 has-[input:focus-within]:-outline-offset-2 has-[input:focus-within]:outline-indigo-600">
+        <input
+          id="proof"
+          name="proof"
+          type="text"
+          value={inputtedProof}
+          onChange={onChange}
+          onKeyDown={handleKeyDown}
+          className="block min-w-0 w-full py-1.5 pr-3 pl-1 text-base text-(--flexoki-black) focus:outline-none"
+        ></input>
+      {/* <div className="grid shrink-0 grid-cols-1 focus-within:relative">
         <select
           id="rule"
           name="rule"
@@ -123,11 +124,13 @@ const AddItem = ({
             );
           })}
         </select>
+      </div> */}
       </div>
-      <button type="button" onClick={handleSubmit}>
+      <div onClick={handleSubmit} className="w-1/2 border rounded-sm mt-5 p-2 text-center hover:bg-(--color-ui-hover) active:bg-(--color-ui-active) cursor-pointer">
         Submit
-      </button>
+      </div> 
     </div>
+    
   );
 };
 

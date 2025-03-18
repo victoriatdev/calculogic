@@ -5,7 +5,7 @@ const Layout = () => {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen w-full flex items-center justify-center bg-(--flexoki-paper) dark:bg-(--flexoki-black)">
+      <main className="min-h-[calc(100vh-80px)] w-full flex items-center justify-center bg-(--flexoki-paper) dark:bg-(--flexoki-black)">
         <Outlet />
       </main>
     </>

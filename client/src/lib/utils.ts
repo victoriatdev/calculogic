@@ -10,22 +10,22 @@ export const formatInput = (input: string) => {
   console.log("trigger");
 
   if (input.includes("->") || input.includes("=>")) {
-    formattedInput = formattedInput.replace("->", String.fromCodePoint(8594));
+    formattedInput = formattedInput.replaceAll("->", String.fromCodePoint(8594));
   }
   if (input.includes("^") || input.includes("&")) {
-    formattedInput = formattedInput.replace(
+    formattedInput = formattedInput.replaceAll(
       /[\^&]/g,
       String.fromCodePoint(8743)
     );
   }
   if (input.includes("v") || input.includes("V") || input.includes("||")) {
-    formattedInput = formattedInput.replace(
+    formattedInput = formattedInput.replaceAll(
       /[vV||]/g,
       String.fromCodePoint(8744)
     );
   }
   if (input.includes("!") || input.includes("¬") || input.includes("~")) {
-    formattedInput = formattedInput.replace(
+    formattedInput = formattedInput.replaceAll(
       /[!~¬]/g,
       String.fromCodePoint(172)
     );

@@ -50,8 +50,9 @@ func ProveSequentCalculus(c echo.Context) error {
 }
 
 func AttemptSequentCalculusProof2(sequent [][]string) (bool, error) {
+
 	// base case: leaf?
-	// antecedent := sequent[0]
+	antecedent := sequent[0]
 	succedent := sequent[1]
 	fmt.Printf("Current sequent: %v\n", sequent)
 
@@ -65,6 +66,71 @@ func AttemptSequentCalculusProof2(sequent [][]string) (bool, error) {
 		return false, errors.New("succedent is empty")
 	}
 
+	if len(antecedent) > 0 {
+		if antecedent[0] == logic.Implication {
+			fmt.Println("Implication Left detected")
+			childSequent1, childSequent2, err := logic.ApplyImplicationLeft(sequent)
+
+			if err != nil {
+				return false, err
+			}
+
+			p1, e1 := AttemptSequentCalculusProof2(childSequent1)
+			p2, e2 := AttemptSequentCalculusProof2(childSequent2)
+			if e1 != nil {
+				return false, e1
+			}
+			if e2 != nil {
+				return false, e2
+			}
+
+			return p1 && p2, nil
+		}
+
+		if antecedent[0] == logic.Conjunction {
+			fmt.Println("Conjunction Left detected")
+			childSequent, e := logic.ApplyConjunctionLeft(sequent)
+
+			if e != nil {
+				return false, e
+			}
+
+			p, e := AttemptSequentCalculusProof2(childSequent)
+			if e != nil {
+				return false, e
+			}
+			return p, nil
+		}
+
+		if antecedent[0] == logic.Disjunction {
+			childSequent1, childSequent2 := logic.ApplyDisjunctionLeft(sequent)
+			p1, e1 := AttemptSequentCalculusProof2(childSequent1)
+			p2, e2 := AttemptSequentCalculusProof2(childSequent2)
+
+			if e1 != nil {
+				return false, e1
+			}
+			if e2 != nil {
+				return false, e2
+			}
+			return p1 && p2, nil
+		}
+
+		if slices.Contains(antecedent, logic.Negation) {
+			fmt.Println("Negation Left detected")
+			childSequent := logic.ApplyNegationLeft(sequent)
+			p, e := AttemptSequentCalculusProof2(childSequent)
+
+			if e != nil {
+				return false, e
+			}
+
+			return p, nil
+
+		}
+	}
+
+	// below handles right side cases, need to handle left cases
 	// recursive case: there is a still an operator to be attempted
 	if succedent[0] == logic.Implication {
 		fmt.Println("Implication detected")
@@ -94,7 +160,7 @@ func AttemptSequentCalculusProof2(sequent [][]string) (bool, error) {
 		if e1 != nil {
 			return false, e1
 		}
-		if e1 != nil {
+		if e2 != nil {
 			return false, e2
 		}
 		return p1 && p2, nil

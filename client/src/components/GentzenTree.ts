@@ -7,6 +7,7 @@ type Sequent = {
 };
 
 type ProofNodeProps = {
+  id: string;
   sequent: Sequent;
   proof: ProofNode[];
 };
@@ -24,8 +25,9 @@ class ProofNode {
     this.proof = [];
     if (data) {
       this.sequent = data.sequent;
-      // this.id = data.id;
-      this.proof = data.proof.map((i) => this.addChild(i));
+      this.id = data.id;
+      this.proof =
+        data.proof != undefined ? data.proof.map((i) => this.addChild(i)) : [];
     }
   }
 

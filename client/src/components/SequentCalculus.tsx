@@ -3,9 +3,11 @@ import SubmitProof from "./SubmitProof";
 import RenderSC from "./RenderSC";
 import { v4 } from "uuid";
 import { useEffect, useState } from "react";
-import { ProofNode } from "./GentzenTree";
+import { ProofNode, Sequent } from "./GentzenTree";
 import Indicator from "./Indicator";
-import CachedExample, { type CachedExample as TCachedExample}from "./CachedExample";
+import CachedExample, {
+  type CachedExample as TCachedExample,
+} from "./CachedExample";
 import { formatInput } from "../lib/utils";
 import Tooltip from "./Tooltip";
 import { sleep } from "bun";
@@ -88,6 +90,29 @@ const t2 = {
   ],
 };
 
+const buildTree = (serverTree: any) => {
+  console.log(serverTree);
+
+  const sequent: Sequent = {
+    Antecedent: serverTree.Data[0],
+    Succedent: serverTree.Data[1],
+    InferenceRule: serverTree.Rule,
+  };
+
+  const builtTree: ProofNode = new ProofNode({
+    id: serverTree.Id,
+    sequent: sequent,
+    proof:
+      serverTree.Children != null
+        ? serverTree.Children.forEach((child) => {
+            buildTree(child);
+          })
+        : [],
+  });
+
+  return builtTree;
+};
+
 const SequentCalculus = () => {
   const [tree, setTree] = useState<ProofNode>();
   const [requestStatus, setRequestStatus] = useState("");
@@ -96,41 +121,44 @@ const SequentCalculus = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChildData = (data: any) => {
+    // console.log(data);
+    const tree = buildTree(data);
+    console.log(tree);
     setTree(data);
   };
 
   // const examples : string[] = ["P->Q->P^Q", "¬AvA"];
 
-  const examples : TCachedExample[] = [
+  const examples: TCachedExample[] = [
     {
       expression: "P->Q->P^Q",
-      variant: "SC"
+      variant: "SC",
     },
     {
       expression: "¬AvA",
-      variant: "ND"
-    }
+      variant: "ND",
+    },
   ];
 
-  const cachedExampleText : string = "These cached examples can be used as examples of how to format proofs, and they will always work. They are labelled with the system they work for. Simply click on an example to load it into the submission box."
+  const cachedExampleText: string =
+    "These cached examples can be used as examples of how to format proofs, and they will always work. They are labelled with the system they work for. Simply click on an example to load it into the submission box.";
 
   const refreshCachedExamples = async () => {
-    setIsLoading(true)
-    await new Promise(f => setTimeout(f, 500))
-    setIsLoading(false)
-    setCachedExamples(examples)
-  }
+    setIsLoading(true);
+    await new Promise((f) => setTimeout(f, 500));
+    setIsLoading(false);
+    setCachedExamples(examples);
+  };
 
-
-  const handleRequestUpdate = (status : string) => {
+  const handleRequestUpdate = (status: string) => {
     setRequestStatus(status);
-  }
+  };
 
-  const handleLoadExpression = (expression : string) => {
+  const handleLoadExpression = (expression: string) => {
     // console.log(expression)
     handleRequestUpdate("");
     setExpressionToLoad(formatInput(expression));
-  }
+  };
 
   return (
     // global container
@@ -141,20 +169,42 @@ const SequentCalculus = () => {
             <span>Cached Examples</span>
             <Tooltip text={cachedExampleText} />
           </div>
-          <button type="button" onClick={refreshCachedExamples} className="p-2 hover:bg-(--color-ui-hover) active:bg-(--color-ui-active) cursor-pointer rounded-sm bg-(--color-ui-normal)">Refresh</button>
+          <button
+            type="button"
+            onClick={refreshCachedExamples}
+            className="p-2 hover:bg-(--color-ui-hover) active:bg-(--color-ui-active) cursor-pointer rounded-sm bg-(--color-ui-normal)"
+          >
+            Refresh
+          </button>
         </div>
         <div className="space-y-2">
-          {isLoading ? "Loading..." : cachedExamples.map((example, id) => (
-            <div>
-              <CachedExample expression={example.expression} variant={example.variant} loadExpression={handleLoadExpression} key={id} />
-            </div>
-          ))}
+          {isLoading
+            ? "Loading..."
+            : cachedExamples.map((example, id) => (
+                <div>
+                  <CachedExample
+                    expression={example.expression}
+                    variant={example.variant}
+                    loadExpression={handleLoadExpression}
+                    key={id}
+                  />
+                </div>
+              ))}
         </div>
       </div>
       <div className="space-y-4 w-1/3 min-h-[calc(100vh-80px)] pt-10 flex flex-col items-center">
-        <SubmitProof proofTree={t2} passToChild={handleChildData} handleLoadExpression={handleLoadExpression} expressionToLoad={expressionToLoad} setRequestStatus={handleRequestUpdate}/>
-        {requestStatus == "proven" && expressionToLoad == formatInput("P->Q->P^Q") && <RenderSC proofTree={t2} />}
-        {requestStatus && <Indicator indicatorStatus={requestStatus}/>}
+        <SubmitProof
+          proofTree={tree}
+          passToChild={handleChildData}
+          handleLoadExpression={handleLoadExpression}
+          expressionToLoad={expressionToLoad}
+          setRequestStatus={handleRequestUpdate}
+        />
+        {requestStatus == "proven" &&
+          expressionToLoad == formatInput("P->Q->P^Q") && (
+            <RenderSC proofTree={tree} />
+          )}
+        {requestStatus && <Indicator indicatorStatus={requestStatus} />}
       </div>
       <SelfSolveToggle />
     </div>

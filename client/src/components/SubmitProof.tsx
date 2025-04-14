@@ -3,7 +3,13 @@ import { ProofNode } from "./GentzenTree";
 import { getEnumKeys, InferenceRule } from "../types/LogicalRules";
 import { formatInput } from "../lib/utils";
 
-const SubmitProof = ({ proofTree, passToChild, setRequestStatus, handleLoadExpression,  expressionToLoad }: any) => {
+const SubmitProof = ({
+  proofTree,
+  passToChild,
+  setRequestStatus,
+  handleLoadExpression,
+  expressionToLoad,
+}: any) => {
   // const [inputtedProof, setInputtedProof] = useState("");
   // const [tree, setTree] = useState<ProofNode>();
   const [rule, setRule] = useState<InferenceRule>(InferenceRule.ASSUMPTION);
@@ -11,20 +17,22 @@ const SubmitProof = ({ proofTree, passToChild, setRequestStatus, handleLoadExpre
   const handleSubmit = async () => {
     const res = await fetch(`http://localhost:1323/proof/sequent-calculus`, {
       method: "POST",
-      body: JSON.stringify({"formula": expressionToLoad}),
+      body: JSON.stringify({ formula: expressionToLoad }),
       headers: {
         "Content-Type": "application/json",
       },
     });
 
     if (!res.ok) {
-      setRequestStatus("fail")
+      setRequestStatus("fail");
     } else if (res.status == 400) {
-      setRequestStatus("fail")
+      setRequestStatus("fail");
     } else {
-      setRequestStatus("proven")
+      const body = await res.json();
+      // console.log(body);
+      passToChild(body);
+      setRequestStatus("proven");
     }
-
   };
 
   const handleKeyDown = (event: any) => {
@@ -34,7 +42,7 @@ const SubmitProof = ({ proofTree, passToChild, setRequestStatus, handleLoadExpre
   };
 
   const handleInput = (input) => {
-    handleLoadExpression(input)
+    handleLoadExpression(input);
   };
 
   const handleAdd = () => {
@@ -49,6 +57,7 @@ const SubmitProof = ({ proofTree, passToChild, setRequestStatus, handleLoadExpre
         InferenceRule: rule,
       },
       proof: [],
+      id: null,
     });
 
     // console.log(proofTree);
@@ -92,7 +101,7 @@ const AddItem = ({
   inputtedProof,
   handleKeyDown,
   setRule,
-  handleSubmit
+  handleSubmit,
 }) => {
   return (
     <div className="flex flex-col items-center">
@@ -106,7 +115,7 @@ const AddItem = ({
           onKeyDown={handleKeyDown}
           className="block min-w-0 w-full py-1.5 pr-3 pl-1 text-base text-(--flexoki-black) focus:outline-none"
         ></input>
-      {/* <div className="grid shrink-0 grid-cols-1 focus-within:relative">
+        {/* <div className="grid shrink-0 grid-cols-1 focus-within:relative">
         <select
           id="rule"
           name="rule"
@@ -126,11 +135,13 @@ const AddItem = ({
         </select>
       </div> */}
       </div>
-      <div onClick={handleSubmit} className="w-1/2 border rounded-sm mt-5 p-2 text-center hover:bg-(--color-ui-hover) active:bg-(--color-ui-active) cursor-pointer">
+      <div
+        onClick={handleSubmit}
+        className="w-1/2 border rounded-sm mt-5 p-2 text-center hover:bg-(--color-ui-hover) active:bg-(--color-ui-active) cursor-pointer"
+      >
         Submit
-      </div> 
+      </div>
     </div>
-    
   );
 };
 

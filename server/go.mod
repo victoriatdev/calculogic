@@ -5,6 +5,7 @@ go 1.23.5
 require (
 	github.com/adamay909/logicTools v0.0.0-20240404182633-8f42f518a3d6
 	github.com/go-sql-driver/mysql v1.9.0
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
 )

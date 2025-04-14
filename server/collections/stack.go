@@ -11,6 +11,10 @@ func (s *Stack) Push(data interface{}) {
 	s.items = append(s.items, data)
 }
 
+func (s *Stack) Inspect() []interface{} {
+	return s.items
+}
+
 // Pop element off of stack
 func (s *Stack) Pop() interface{} {
 	if s.IsEmpty() {

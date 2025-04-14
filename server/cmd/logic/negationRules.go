@@ -1,6 +1,8 @@
 package logic
 
 import (
+	"fmt"
+	"fyp-server/cmd/utils"
 	"slices"
 )
 
@@ -15,12 +17,36 @@ func ApplyNegationRight(sequent [][]string) [][]string {
 	}
 
 	negationOperator := slices.Index(succedent, "¬")
-	leftMost := succedent[negationOperator+1]
-	delta := succedent[negationOperator+2:]
 
-	antecedent := append([]string{leftMost}, gamma...)
+	fmt.Println(negationOperator)
 
-	sequent = append([][]string{}, antecedent, delta)
+	if negationOperator == 0 {
+		if succedent[negationOperator+1] == "(" {
+			firstIndex, lastIndex := utils.HandleBrackets(succedent)
+			leftMost := succedent[firstIndex : lastIndex]
+			delta := succedent[lastIndex+1:]
+			antecedent := append(leftMost, gamma...)
+			sequent := append([][]string{}, antecedent, delta)
+
+			return sequent
+		} else {
+			leftMost := succedent[negationOperator+1]
+			delta := succedent[negationOperator+2:]
+			antecedent := append([]string{leftMost}, gamma...)
+			sequent = append([][]string{}, antecedent, delta)
+		}
+	} else {
+		// fmt.Println(sequent)
+		pre := succedent[:negationOperator]
+		// fmt.Println(pre)
+		leftMost := succedent[negationOperator+1]
+		// fmt.Println(leftMost)
+		delta := succedent[negationOperator+2:]
+		delta = append(pre, delta...)
+		// fmt.Println(delta)
+		antecedent := append([]string{leftMost}, gamma...)
+		sequent = append([][]string{}, antecedent, delta)
+	}
 
 	return sequent
 }
@@ -35,6 +61,16 @@ func ApplyNegationLeft(sequent [][]string) [][]string {
 	}
 
 	negationOperator := slices.Index(antecedent, "¬")
+
+	if antecedent[negationOperator+1] == "(" {
+		firstIndex, lastIndex := utils.HandleBrackets(antecedent)
+		rightMost := antecedent[firstIndex : lastIndex]
+		gamma := antecedent[:negationOperator]
+		succedent := append(rightMost, delta...)
+		sequent = append([][]string{}, gamma, succedent)
+		return sequent
+	}
+
 	rightMost := antecedent[negationOperator+1]
 	gamma := antecedent[:negationOperator]
 

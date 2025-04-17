@@ -9,17 +9,20 @@ import (
 // IMPLICATION RULES
 func ApplyImplicationRight(sequent [][]string) ([][]string, error) {
 
-	var antecedent = sequent[0]
-	var succedent = sequent[1]
+	newSequent := make([][]string, len(sequent))
+	copy(newSequent, sequent)
+
+	var newAntecedent = newSequent[0]
+	var newSuccedent = newSequent[1]
 
 	// determine succedent values
 	// [[], [->, P, P]]
 
-	if !slices.Contains(succedent, "→") {
+	if !slices.Contains(newSuccedent, "→") {
 		return [][]string{}, errors.New("no implication")
 	}
 
-	implicationOperator := slices.Index(succedent, "→")
+	implicationOperator := slices.Index(newSuccedent, "→")
 
 	if implicationOperator == -1 {
 		return [][]string{}, errors.New("index out of range")
@@ -28,47 +31,54 @@ func ApplyImplicationRight(sequent [][]string) ([][]string, error) {
 	var leftMost []string
 	var rightMost []string
 
-	if succedent[implicationOperator+1] == Negation {
-		leftMost = succedent[implicationOperator+1 : implicationOperator+2]
-	}  else if succedent[implicationOperator+1] == "(" {
-		// fmt.Println(succedent)
-		indexOfFirstBracket := slices.Index(succedent, "(")
-		slices.Reverse(succedent)
-		// fmt.Println(succedent)
-		indexOfLastBracket := len(succedent) - slices.Index(succedent, ")") - 1
-		// fmt.Printf("index of last ): %v\n", len(succedent)-index)
-		slices.Reverse(succedent)
-		// fmt.Println(succedent[indexOfLastBracket])
+	if newSuccedent[implicationOperator+1] == Negation {
+		if newSuccedent[implicationOperator+2] == "(" {
+			slices.Reverse(newSuccedent)
+			indexOfLastBracket := len(newSuccedent) - slices.Index(newSuccedent, ")") - 1
+			slices.Reverse(newSuccedent)
+			bracketedContent := newSuccedent[implicationOperator+1 : indexOfLastBracket+1]
+			leftMost = append([]string{}, bracketedContent...)
+		}
+	} else if newSuccedent[implicationOperator+1] == "(" {
+		indexOfFirstBracket := slices.Index(newSuccedent, "(")
+		slices.Reverse(newSuccedent)
+		indexOfLastBracket := len(newSuccedent) - slices.Index(newSuccedent, ")") - 1
+		slices.Reverse(newSuccedent)
 		fmt.Printf("index 1: %v, index 2: %v\n", indexOfFirstBracket, indexOfLastBracket)
-		// fmt.Println(indexOfLastBracket)
-		bracketedContent := succedent[indexOfFirstBracket+1 : indexOfLastBracket]
+		bracketedContent := newSuccedent[indexOfFirstBracket+1 : indexOfLastBracket]
 
 		leftMost = append([]string{}, bracketedContent...)
-		// fmt.Printf("leftMost: %v\n", leftMost)
 	} else {
-		leftMost = append([]string{}, succedent[implicationOperator+1])
+		leftMost = append([]string{}, newSuccedent[implicationOperator+1])
 	}
 
-	if succedent[implicationOperator+1] == Negation {
-		rightMost = succedent[implicationOperator+3:]
-	} else if succedent[implicationOperator+1] == "(" {
-		slices.Reverse(succedent)
-		indexOfLastBracket := len(succedent) - slices.Index(succedent, ")") - 1
-		slices.Reverse(succedent)
-		rightMost = succedent[indexOfLastBracket+1:]
+	if newSuccedent[implicationOperator+1] == Negation {
+		if newSuccedent[implicationOperator+2] == "(" {
+			slices.Reverse(newSuccedent)
+			indexOfLastBracket := len(newSuccedent) - slices.Index(newSuccedent, ")") - 1
+			slices.Reverse(newSuccedent)
+			rightMost = newSuccedent[indexOfLastBracket+1:]
+		} else {
+			rightMost = newSuccedent[implicationOperator+3:]
+		}
+	} else if newSuccedent[implicationOperator+1] == "(" {
+		slices.Reverse(newSuccedent)
+		indexOfLastBracket := len(newSuccedent) - slices.Index(newSuccedent, ")") - 1
+		slices.Reverse(newSuccedent)
+		rightMost = newSuccedent[indexOfLastBracket+1:]
 	} else {
-		rightMost = succedent[implicationOperator+2:]
+		rightMost = newSuccedent[implicationOperator+2:]
 	}
 
-	// rightMost := succedent[implicationOperator+2:]
+	// rightMost := newSuccedent[implicationOperator+2:]
 
 	// prepend leftmost to antecedent via composite literal
 
-	antecedent = append(append([]string{}, leftMost...), antecedent...)
+	newAntecedent = append(append([]string{}, leftMost...), newAntecedent...)
 
-	sequent = append([][]string{}, antecedent, rightMost)
+	newSequent = append([][]string{}, newAntecedent, rightMost)
 
-	return sequent, nil
+	return newSequent, nil
 }
 
 func ApplyImplicationLeft(sequent [][]string) ([][]string, [][]string, error) {
@@ -89,13 +99,13 @@ func ApplyImplicationLeft(sequent [][]string) ([][]string, [][]string, error) {
 		return [][]string{}, [][]string{}, errors.New("index out of range")
 	}
 
-	if (antecedent[implicationOperator+1] == "(") {
+	if antecedent[implicationOperator+1] == "(" {
 		indexOfFirstBracket := slices.Index(antecedent, "(")
 		slices.Reverse(antecedent)
 		indexOfLastBracket := len(antecedent) - slices.Index(antecedent, ")") - 1
 		slices.Reverse(antecedent)
 		// fmt.Printf("index 1: %v, index 2: %v\n", indexOfFirstBracket, indexOfLastBracket)
-		bracketedContent := antecedent[indexOfFirstBracket +1 : indexOfLastBracket]
+		bracketedContent := antecedent[indexOfFirstBracket+1 : indexOfLastBracket]
 		leftMost = bracketedContent
 
 		rightMost = antecedent[indexOfLastBracket+1:]
@@ -109,7 +119,7 @@ func ApplyImplicationLeft(sequent [][]string) ([][]string, [][]string, error) {
 	leftAntecedent := append([]string{}, antecedent[:implicationOperator]...)
 	leftSequent := append([][]string{}, leftAntecedent, leftSuccedent)
 
-	fmt.Println(leftSequent);
+	fmt.Println(leftSequent)
 
 	// build
 	rightSuccedent := append([]string{}, succedent...)

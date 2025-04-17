@@ -9,8 +9,15 @@ import (
 // CONJUNCTION RULES
 func ApplyConjunctionRight(sequent [][]string) ([][]string, [][]string, error) {
 
-	gamma := sequent[0]
-	succedent := sequent[1]
+	fmt.Println(sequent)
+
+	newSequent := make([][]string, len(sequent))
+	copy(newSequent, sequent)
+
+	var gamma = newSequent[0]
+	var succedent = newSequent[1]
+
+	backup := []string{}
 
 	// fmt.Println(slices.Contains(succedent, Conjunction))
 	// fmt.Println(succedent)
@@ -23,6 +30,11 @@ func ApplyConjunctionRight(sequent [][]string) ([][]string, [][]string, error) {
 	conjunctionOperator := slices.Index(succedent, "∧")
 	if conjunctionOperator == -1 {
 		return [][]string{}, [][]string{}, errors.New("index out of range")
+	}
+
+	if conjunctionOperator != 1 {
+		backup = append(backup, succedent[:conjunctionOperator]...)
+		fmt.Println(backup)
 	}
 	// leftMost := succedent[conjunctionOperator+1]
 	// rightMost := succedent[conjunctionOperator+2]
@@ -46,13 +58,16 @@ func ApplyConjunctionRight(sequent [][]string) ([][]string, [][]string, error) {
 
 	// build leftSequent
 
-	leftSuccedent := append(append([]string{}, leftMost...), delta...)
+	leftSuccedent := append(append(backup, leftMost...), delta...)
 	leftSequent := append([][]string{}, gamma, leftSuccedent)
 
 	// build rightSequent
 
-	rightSuccedent := append(append([]string{}, rightMost...), delta...)
+	rightSuccedent := append(append(backup, rightMost...), delta...)
 	rightSequent := append([][]string{}, gamma, rightSuccedent)
+
+	fmt.Println(leftSequent)
+	fmt.Println(rightSequent)
 
 	return leftSequent, rightSequent, nil
 }

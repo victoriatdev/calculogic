@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"fyp-server/cmd/logic"
+	"fyp-server/cmd/utils"
 	"fyp-server/collections"
 	"net/http"
 	"regexp"
@@ -37,8 +38,6 @@ func ProveSequentCalculus(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "The provided formula is empty.")
 	}
 
-	// fmt.Println(sequentCalculusFormulae.Formula)
-
 	isProvable, jsonTree, e := AttemptSequentCalculusProof(sequentCalculusFormulae.Formula, &formulaTree)
 
 	if e != nil {
@@ -64,16 +63,8 @@ func AttemptSequentCalculusProof2(sequent [][]string, tree *collections.Node) (b
 
 	if logic.ApplyAssumption(sequent) {
 		fmt.Println("Assumption applied")
-		// node := collections.Node{Id: uuid.New(), Data: sequent, Children: nil, Rule: "Assumption" }
-		// tree.AddChild(&node)
 		tree.SetRule("A")
-		tree.SetData(convertToInfix(tree.GetData()))
-		// fmt.Printf("A Node Data: %v\n", node.GetData())
-		// fmt.Printf("A Parent: %v\n", node.GetParent())
-		// fmt.Printf("T Children: %v\n", tree.GetChildren())
-		// fmt.Printf("T Value: %v\n", tree)
-		// fmt.Printf("T Address: %p\n", tree)
-		// return something???
+		tree.AddChildren([]*collections.Node{})
 		return true, nil
 	}
 
@@ -82,153 +73,236 @@ func AttemptSequentCalculusProof2(sequent [][]string, tree *collections.Node) (b
 	}
 
 	if len(antecedent) > 0 {
-		if antecedent[0] == logic.Implication {
-			fmt.Println("Implication Left detected")
-			childSequent1, childSequent2, err := logic.ApplyImplicationLeft(sequent)
+		i := 0
+		fmt.Println("Scanning A")
 
-			if err != nil {
-				return false, err
+		for i < len(antecedent) {
+			if antecedent[i] == logic.Implication {
+				fmt.Println("Implication Left detected")
+				childSequent1, childSequent2, err := logic.ApplyImplicationLeft(sequent)
+
+				if err != nil {
+					return false, err
+				}
+
+				// create 2 child nodes for tree
+				n1 := collections.Node{Id: uuid.New(), Data: childSequent1, Children: nil}
+				n2 := collections.Node{Id: uuid.New(), Data: childSequent2, Children: nil}
+				childNodes := append([]*collections.Node{}, &n1, &n2)
+				tree.AddChildren(childNodes)
+				tree.SetRule("→L")
+
+				p1, e1 := AttemptSequentCalculusProof2(childSequent1, &n1)
+				p2, e2 := AttemptSequentCalculusProof2(childSequent2, &n2)
+				if e1 != nil {
+					return false, e1
+				}
+				if e2 != nil {
+					return false, e2
+				}
+
+				// data := tree.GetData().([][]string)
+				// formattedAntecedent := utils.ConvertToInfix(data[0])
+				// formattedSuccedent := utils.ConvertToInfix(data[1])
+				// formattedSequent := append([][]string{}, formattedAntecedent, formattedSuccedent)
+				// fmt.Println(formattedSequent)
+				// tree.SetData(formattedSequent)
+
+				return p1 && p2, nil
 			}
 
-			// create 2 child nodes for tree
-			n1 := collections.Node{Id: uuid.New(), Data: childSequent1, Children: nil }
-			n2 := collections.Node{Id: uuid.New(), Data: childSequent2, Children: nil }
-			childNodes := append([]*collections.Node{}, &n1, &n2)
-			tree.AddChildren(childNodes)
+			if antecedent[i] == logic.Conjunction {
+				fmt.Println("Conjunction Left detected")
+				childSequent, e := logic.ApplyConjunctionLeft(sequent)
 
-			p1, e1 := AttemptSequentCalculusProof2(childSequent1, tree)
-			p2, e2 := AttemptSequentCalculusProof2(childSequent2, tree)
-			if e1 != nil {
-				return false, e1
-			}
-			if e2 != nil {
-				return false, e2
-			}
+				if e != nil {
+					return false, e
+				}
 
-			return p1 && p2, nil
-		}
+				node := collections.Node{Id: uuid.New(), Data: childSequent, Children: nil}
+				tree.AddChild(&node)
+				tree.SetRule("∧L")
 
-		if antecedent[0] == logic.Conjunction {
-			fmt.Println("Conjunction Left detected")
-			childSequent, e := logic.ApplyConjunctionLeft(sequent)
+				// formattedAntecedent := utils.ConvertToInfix(append([]string{}, sequent[0]...))
+				// formattedSuccedent := utils.ConvertToInfix(append([]string{}, sequent[1]...))
+				// formattedSequent := append([][]string{}, formattedAntecedent, formattedSuccedent)
+				// tree.SetData(formattedSequent)
 
-			if e != nil {
-				return false, e
+				p, e := AttemptSequentCalculusProof2(childSequent, &node)
+				if e != nil {
+					return false, e
+				}
+				return p, nil
 			}
 
-			p, e := AttemptSequentCalculusProof2(childSequent, tree)
-			if e != nil {
-				return false, e
-			}
-			return p, nil
-		}
+			if antecedent[i] == logic.Disjunction {
+				childSequent1, childSequent2 := logic.ApplyDisjunctionLeft(sequent)
 
-		if antecedent[0] == logic.Disjunction {
-			childSequent1, childSequent2 := logic.ApplyDisjunctionLeft(sequent)
+				// create 2 child nodes for tree
+				n1 := collections.Node{Id: uuid.New(), Data: childSequent1}
+				n2 := collections.Node{Id: uuid.New(), Data: childSequent2}
+				childNodes := append([]*collections.Node{}, &n1, &n2)
+				tree.AddChildren(childNodes)
+				tree.SetRule("∨L")
 
-			// create 2 child nodes for tree
-			n1 := collections.Node{Id: uuid.New(), Data: childSequent1 }
-			n2 := collections.Node{Id: uuid.New(), Data: childSequent2 }
-			childNodes := append([]*collections.Node{}, &n1, &n2)
-			tree.AddChildren(childNodes)
+				// formattedAntecedent := utils.ConvertToInfix(append([]string{}, sequent[0]...))
+				// formattedSuccedent := utils.ConvertToInfix(append([]string{}, sequent[1]...))
+				// formattedSequent := append([][]string{}, formattedAntecedent, formattedSuccedent)
+				// tree.SetData(formattedSequent)
 
-			p1, e1 := AttemptSequentCalculusProof2(childSequent1, &n1)
-			p2, e2 := AttemptSequentCalculusProof2(childSequent2, &n2)
+				p1, e1 := AttemptSequentCalculusProof2(childSequent1, &n1)
+				p2, e2 := AttemptSequentCalculusProof2(childSequent2, &n2)
 
-			if e1 != nil {
-				return false, e1
-			}
-			if e2 != nil {
-				return false, e2
-			}
-			return p1 && p2, nil
-		}
-
-		if slices.Contains(antecedent, logic.Negation) {
-			fmt.Println("Negation Left detected")
-			childSequent := logic.ApplyNegationLeft(sequent)
-			p, e := AttemptSequentCalculusProof2(childSequent, tree)
-
-			if e != nil {
-				return false, e
+				if e1 != nil {
+					return false, e1
+				}
+				if e2 != nil {
+					return false, e2
+				}
+				return p1 && p2, nil
 			}
 
-			return p, nil
+			if antecedent[i] == logic.Negation {
+				fmt.Println("Negation Left detected")
+				childSequent := logic.ApplyNegationLeft(sequent)
 
+				node := collections.Node{Id: uuid.New(), Data: childSequent, Children: nil}
+				tree.AddChild(&node)
+				tree.SetRule("¬L")
+
+				// formattedAntecedent := utils.ConvertToInfix(append([]string{}, sequent[0]...))
+				// formattedSuccedent := utils.ConvertToInfix(append([]string{}, sequent[1]...))
+				// formattedSequent := append([][]string{}, formattedAntecedent, formattedSuccedent)
+				// tree.SetData(formattedSequent)
+
+				p, e := AttemptSequentCalculusProof2(childSequent, &node)
+
+				if e != nil {
+					return false, e
+				}
+
+				return p, nil
+
+			}
+			i += 1
 		}
 	}
 
 	// below handles right side cases, need to handle left cases
 	// recursive case: there is a still an operator to be attempted
-	if succedent[0] == logic.Implication {
-		fmt.Println("Implication detected")
-		childSequent, childSequentError := logic.ApplyImplicationRight(sequent)
+	i := 0
+	for i < len(succedent) {
+		if succedent[i] == logic.Implication {
+			fmt.Println("Implication detected")
+			// fmt.Printf("before: %v", sequent)
+			childSequent, childSequentError := logic.ApplyImplicationRight(sequent)
+			// fmt.Printf("after: %v", sequent)
 
-		if childSequentError != nil {
-			return false, childSequentError
+			if childSequentError != nil {
+				return false, childSequentError
+			}
+
+			node := collections.Node{Id: uuid.New(), Data: childSequent, Children: nil}
+			tree.AddChild(&node)
+			tree.SetRule("→R")
+
+			// fmt.Print(sequent)
+
+			// // data := tree.GetData().([][]string)
+			// formattedAntecedent := utils.ConvertToInfix(append([]string{}, sequent[0]...))
+			// // fmt.Println(formattedAntecedent)
+			// formattedSuccedent := utils.ConvertToInfix(append([]string{}, sequent[1]...))
+			// formattedSequent := append([][]string{}, formattedAntecedent, formattedSuccedent)
+			// // fmt.Println(formattedSequent)
+			// tree.SetData(formattedSequent)
+
+			fmt.Printf("before: %v\n", sequent)
+			p, e := AttemptSequentCalculusProof2(childSequent, &node)
+			if e != nil {
+				return false, e
+			}
+			fmt.Printf("after: %v\n", sequent)
+
+			return p, nil
 		}
 
-		node := collections.Node{Id: uuid.New(), Data: childSequent, Children: nil }
-		tree.AddChild(&node)
-		tree.SetRule("→I")
+		if succedent[i] == logic.Conjunction {
+			fmt.Println("Conjunction Right detected")
+			childSequent1, childSequent2, e := logic.ApplyConjunctionRight(sequent)
 
-		p, e := AttemptSequentCalculusProof2(childSequent, &node)
-		if e != nil {
-			return false, e
-		}
-		return p, nil
-	}
+			if e != nil {
+				return false, e
+			}
 
-	if succedent[0] == logic.Conjunction {
-		fmt.Println("Conjunction detected")
-		childSequent1, childSequent2, e := logic.ApplyConjunctionRight(sequent)
+			n1 := collections.Node{Id: uuid.New(), Data: childSequent1, Children: nil}
+			n2 := collections.Node{Id: uuid.New(), Data: childSequent2, Children: nil}
+			tree.AddChild(&n1)
+			tree.AddChild(&n2)
+			tree.SetRule("∧R")
 
-		if e != nil {
-			return false, e
-		}
+			// formattedAntecedent := utils.ConvertToInfix(append([]string{}, sequent[0]...))
+			// formattedSuccedent := utils.ConvertToInfix(append([]string{}, sequent[1]...))
+			// formattedSequent := append([][]string{}, formattedAntecedent, formattedSuccedent)
+			// tree.SetData(formattedSequent)
 
-		n1 := collections.Node{Id: uuid.New(), Data: childSequent1, Children: nil }
-		n2 := collections.Node{Id: uuid.New(), Data: childSequent2, Children: nil }
-		tree.AddChild(&n1)
-		tree.AddChild(&n2)
-		tree.SetRule("∧I")
-		p1, e1 := AttemptSequentCalculusProof2(childSequent1, &n1)
-		p2, e2 := AttemptSequentCalculusProof2(childSequent2, &n2)
-		if e1 != nil {
-			return false, e1
-		}
-		if e2 != nil {
-			return false, e2
-		}
-		return p1 && p2, nil
-	}
+			p1, e1 := AttemptSequentCalculusProof2(childSequent1, &n1)
+			p2, e2 := AttemptSequentCalculusProof2(childSequent2, &n2)
+			if e1 != nil {
+				return false, e1
+			}
+			if e2 != nil {
+				return false, e2
+			}
 
-	if succedent[0] == logic.Disjunction {
-		childSequent := logic.ApplyDisjunctionRight(sequent)
-	
-		// create 2 child nodes for tree
-		n1 := collections.Node{Id: uuid.New(), Data: childSequent, Children: nil }
-		// childNodes := append([]*collections.Node{}, &n1)
-		tree.AddChild(&n1)
-
-		p, e := AttemptSequentCalculusProof2(childSequent, &n1)
-		if e != nil {
-			return false, e
-		}
-		return p, nil
-	}
-
-	if slices.Contains(succedent, logic.Negation) {
-		fmt.Println("Negation detected")
-		childSequent := logic.ApplyNegationRight(sequent)
-		p, e := AttemptSequentCalculusProof2(childSequent, tree)
-
-		if e != nil {
-			return false, e
+			return p1 && p2, nil
 		}
 
-		return p, nil
+		if succedent[i] == logic.Disjunction {
+			childSequent := logic.ApplyDisjunctionRight(sequent)
 
+			// create 2 child nodes for tree
+			n1 := collections.Node{Id: uuid.New(), Data: childSequent, Children: nil}
+			// childNodes := append([]*collections.Node{}, &n1)
+			tree.AddChild(&n1)
+			tree.SetRule("∨R")
+
+			// formattedAntecedent := utils.ConvertToInfix(append([]string{}, sequent[0]...))
+			// formattedSuccedent := utils.ConvertToInfix(append([]string{}, sequent[1]...))
+			// formattedSequent := append([][]string{}, formattedAntecedent, formattedSuccedent)
+			// tree.SetData(formattedSequent)
+
+			p, e := AttemptSequentCalculusProof2(childSequent, &n1)
+			if e != nil {
+				return false, e
+			}
+			return p, nil
+		}
+
+		if succedent[i] == logic.Negation {
+			fmt.Println("Negation detected")
+			childSequent := logic.ApplyNegationRight(sequent)
+
+			node := collections.Node{Id: uuid.New(), Data: childSequent, Children: nil}
+			tree.AddChild(&node)
+			tree.SetRule("¬R")
+
+			// formattedAntecedent := utils.ConvertToInfix(append([]string{}, sequent[0]...))
+			// formattedSuccedent := utils.ConvertToInfix(append([]string{}, sequent[1]...))
+			// formattedSequent := append([][]string{}, formattedAntecedent, formattedSuccedent)
+			// tree.SetData(formattedSequent)
+
+			p, e := AttemptSequentCalculusProof2(childSequent, &node)
+
+			if e != nil {
+				return false, e
+			}
+
+			return p, nil
+
+		}
+
+		// fmt.Println("No operator found at: %v", i)
+		i += 1
 	}
 
 	return false, errors.New("unprovable formula")
@@ -243,13 +317,13 @@ func AttemptSequentCalculusProof(formula string, tree *collections.Node) (isProv
 	if slices.Contains(strings.Split(formula, ""), logic.Turnstile) {
 		splitFormula := strings.Split(formula, "")
 		turnstileIndex := slices.Index(splitFormula, logic.Turnstile)
-		antecedentFormula, antecedentFormulaError := buildFormulaTokenList(cleanString(strings.Join(splitFormula[:turnstileIndex], "")))
+		antecedentFormula, antecedentFormulaError := utils.BuildFormulaTokenList(cleanString(strings.Join(splitFormula[:turnstileIndex], "")))
 
 		if antecedentFormulaError != nil {
 			return false, nil, antecedentFormulaError
 		}
 
-		succedentFormula, succedentFormulaError := buildFormulaTokenList(cleanString(strings.Join(splitFormula[turnstileIndex+1:], "")))
+		succedentFormula, succedentFormulaError := utils.BuildFormulaTokenList(cleanString(strings.Join(splitFormula[turnstileIndex+1:], "")))
 
 		if succedentFormulaError != nil {
 			return false, nil, succedentFormulaError
@@ -257,7 +331,7 @@ func AttemptSequentCalculusProof(formula string, tree *collections.Node) (isProv
 
 		formulaList = append(formulaList, antecedentFormula, succedentFormula)
 	} else {
-		formulaListv, e := buildFormulaTokenList(cleanString(formula))
+		formulaListv, e := utils.BuildFormulaTokenList(cleanString(formula))
 		// fmt.Printf("%v\n", formulaListv)
 
 		if e != nil {
@@ -373,8 +447,7 @@ func AttemptSequentCalculusProof(formula string, tree *collections.Node) (isProv
 		return isProvable, nil, err
 	}
 
-	fmt.Printf("JSON Tree = %v", string(jsonTree))
-
+	// fmt.Printf("JSON Tree = %v", string(jsonTree))
 
 	return isProvable, jsonTree, e
 }
@@ -385,7 +458,7 @@ func buildFormulaTokenList(s string) (tokenList []string, e error) {
 
 	// prefix
 	slices.Reverse(tokenList)
-	// fmt.Println(tokenList)
+	fmt.Println(tokenList)
 
 	reversed := strings.Join(tokenList, "")
 	reversed = strings.ReplaceAll(reversed, "(", "%")
@@ -393,11 +466,11 @@ func buildFormulaTokenList(s string) (tokenList []string, e error) {
 	reversed = strings.ReplaceAll(reversed, "%", ")")
 	tokenList = strings.Split(reversed, "")
 
-	// fmt.Println(tokenList)
+	fmt.Println(tokenList)
 
 	tokenList = convertToPostfix(tokenList)
 
-	// fmt.Println(tokenList)
+	fmt.Println(tokenList)
 
 	postfix := strings.Join(tokenList, "")
 	postfix = strings.ReplaceAll(postfix, "(", "%")
@@ -407,35 +480,9 @@ func buildFormulaTokenList(s string) (tokenList []string, e error) {
 
 	slices.Reverse(tokenList)
 
-	// fmt.Println(tokenList)
+	fmt.Println(tokenList)
 
 	return tokenList, e
-}
-
-func isLogicalOperator(s string) bool {
-	logicalOperatorList := []string{
-		"→", "¬", "∧", "∨", "⊢", /*"∃", "∀",*/
-	}
-	return slices.Contains(logicalOperatorList, s)
-}
-
-func determineOperatorPrecedence(operator string) int {
-	if operator == "⊢" {
-		return 5
-	}
-	if operator == "¬" {
-		return 4
-	}
-	if operator == "∧" {
-		return 3
-	}
-	if operator == "∨" {
-		return 2
-	}
-	if operator == "→" {
-		return 1
-	}
-	return -1
 }
 
 // TODO: Add bracket support
@@ -470,7 +517,7 @@ func convertToPostfix(sList []string) []string {
 			stack.Pop()
 		} else {
 			// fmt.Printf("operator:%s\n", sList[i])
-			for !stack.IsEmpty() && (determineOperatorPrecedence(sList[i]) <= determineOperatorPrecedence(stack.Top().(string))) {
+			for !stack.IsEmpty() && (utils.DetermineOperatorPrecedence(sList[i]) <= utils.DetermineOperatorPrecedence(stack.Top().(string))) {
 				postfix = append(postfix, stack.Pop().(string))
 				// fmt.Println(postfix)
 			}

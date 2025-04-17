@@ -23,7 +23,7 @@ func ApplyNegationRight(sequent [][]string) [][]string {
 	if negationOperator == 0 {
 		if succedent[negationOperator+1] == "(" {
 			firstIndex, lastIndex := utils.HandleBrackets(succedent)
-			leftMost := succedent[firstIndex : lastIndex]
+			leftMost := succedent[firstIndex:lastIndex]
 			delta := succedent[lastIndex+1:]
 			antecedent := append(leftMost, gamma...)
 			sequent := append([][]string{}, antecedent, delta)
@@ -39,13 +39,22 @@ func ApplyNegationRight(sequent [][]string) [][]string {
 		// fmt.Println(sequent)
 		pre := succedent[:negationOperator]
 		// fmt.Println(pre)
-		leftMost := succedent[negationOperator+1]
-		// fmt.Println(leftMost)
-		delta := succedent[negationOperator+2:]
-		delta = append(pre, delta...)
-		// fmt.Println(delta)
-		antecedent := append([]string{leftMost}, gamma...)
-		sequent = append([][]string{}, antecedent, delta)
+		if succedent[negationOperator+1] == "(" {
+			firstIndex, lastIndex := utils.HandleBrackets(succedent)
+			leftMost := succedent[firstIndex:lastIndex]
+			delta := succedent[lastIndex+1:]
+			delta = append(pre, delta...)
+			antecedent := append(leftMost, gamma...)
+			sequent = append([][]string{}, antecedent, delta)
+		} else {
+			leftMost := succedent[negationOperator+1]
+			// fmt.Println(leftMost)
+			delta := succedent[negationOperator+2:]
+			delta = append(pre, delta...)
+			// fmt.Println(delta)
+			antecedent := append([]string{leftMost}, gamma...)
+			sequent = append([][]string{}, antecedent, delta)
+		}
 	}
 
 	return sequent
@@ -64,7 +73,7 @@ func ApplyNegationLeft(sequent [][]string) [][]string {
 
 	if antecedent[negationOperator+1] == "(" {
 		firstIndex, lastIndex := utils.HandleBrackets(antecedent)
-		rightMost := antecedent[firstIndex : lastIndex]
+		rightMost := antecedent[firstIndex:lastIndex]
 		gamma := antecedent[:negationOperator]
 		succedent := append(rightMost, delta...)
 		sequent = append([][]string{}, gamma, succedent)

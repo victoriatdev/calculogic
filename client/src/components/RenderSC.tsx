@@ -12,31 +12,38 @@ const Leaf = ({ sequent, width }: any) => {
 
   return (
     <div className="pt-1">
+      {/* <hr className="w-1/2 m-auto"/> */}
       <div className="flex justify-center">
-        <span
-          id="left"
-          className="hover:bg-(--color-bl-hover)/25 cursor-pointer"
-        >
-          {tree && tree.Antecedent}
-        </span>
-        <span
-          id="turnstile"
-          className="hover:bg-(--color-re-hover)/25 cursor-pointer"
-        >
-          {tree && String.fromCodePoint(8866)}
-        </span>
-        <span
-          id="right"
-          className="hover:bg-(--color-bl-hover)/25 cursor-pointer"
-        >
-          {tree && tree.Succedent}
-        </span>
-        <span
-          id="rule"
-          className="hover:bg-(--color-gr-hover)/25 cursor-pointer text-xs"
-        >
-          [{tree && tree.InferenceRule}]
-        </span>
+        <div>
+          <div className="flex items-center">
+            <hr className="w-full pr-5"/>
+            <span
+              id="rule"
+              className="hover:bg-(--color-gr-hover)/25 cursor-pointer size-3 text-xs"
+            >
+              {tree && tree.InferenceRule ? "[" + tree.InferenceRule + "]" : ""}
+            </span>
+          </div>
+          <span
+            id="left"
+            className="hover:bg-(--color-bl-hover)/25 cursor-pointer p-1"
+          >
+            {tree && tree.Antecedent}
+          </span>
+          <span
+            id="turnstile"
+            className="hover:bg-(--color-re-hover)/25 cursor-pointer p-1"
+          >
+            {tree && String.fromCodePoint(8866)}
+          </span>
+          <span
+            id="right"
+            className="hover:bg-(--color-bl-hover)/25 cursor-pointer"
+          >
+            {tree && tree.Succedent}
+          </span>
+
+        </div>
       </div>
     </div>
   );
@@ -63,6 +70,7 @@ const TreeNode = ({ proofTree, width }: any) => {
   return (
     <div className="flex-wrap w-full">
       {children}
+      {/* <hr className="w-1/3 m-auto"/> */}
       {proofTree.sequent && <Leaf sequent={proofTree.sequent} width={width} />}
     </div>
   );
@@ -75,7 +83,7 @@ const RenderSC = ({ proofTree }: any) => {
   // if not, then we build a leaf
 
   // build top level node last
-  console.log(tree);
+  console.log("Tree: "+ JSON.stringify(tree));
 
   return (
     <div className="border rounded-sm w-full h-full">

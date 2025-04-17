@@ -11,6 +11,7 @@ import CachedExample, {
 import { formatInput } from "../lib/utils";
 import Tooltip from "./Tooltip";
 import { sleep } from "bun";
+import { NavLink } from "react-router-dom";
 
 const t = {
   sequent: {
@@ -92,23 +93,39 @@ const t2 = {
 
 const buildTree = (serverTree: any) => {
   console.log(serverTree);
+  console.log(serverTree.Children.length)
 
   const sequent: Sequent = {
     Antecedent: serverTree.Data[0],
     Succedent: serverTree.Data[1],
     InferenceRule: serverTree.Rule,
   };
+  
+  if (serverTree.Children.length == 0) {
+    const builtLeaf : ProofNode = new ProofNode({
+      id: serverTree.id,
+      sequent: sequent,
+      proof: []
+    })
+    return builtLeaf
+  }
+
+  const proof = []
+
+  serverTree.Children.forEach((child) => {
+    const childNode = buildTree(child);
+    proof.push(childNode)
+  })
+
+  console.log(proof)
 
   const builtTree: ProofNode = new ProofNode({
     id: serverTree.Id,
     sequent: sequent,
-    proof:
-      serverTree.Children != null
-        ? serverTree.Children.forEach((child) => {
-            buildTree(child);
-          })
-        : [],
+    proof: proof
   });
+
+  console.log(builtTree)
 
   return builtTree;
 };
@@ -123,8 +140,10 @@ const SequentCalculus = () => {
   const handleChildData = (data: any) => {
     // console.log(data);
     const tree = buildTree(data);
+    // const tree = new ProofNode(data)
     console.log(tree);
-    setTree(data);
+
+    setTree(tree);
   };
 
   // const examples : string[] = ["P->Q->P^Q", "¬AvA"];
@@ -193,6 +212,11 @@ const SequentCalculus = () => {
         </div>
       </div>
       <div className="space-y-4 w-1/3 min-h-[calc(100vh-80px)] pt-10 flex flex-col items-center">
+        <div>
+          Input your Sequent Calculus formula you wish to be solved below. Please see the <NavLink className="text-(--color-bl)" to="/glossary">Glossary </NavLink>
+           on more information on how to format your input and how the Sequent Calculus works;
+           or refresh the examples on the left to see some common examples you can click on to load into the solver. 
+        </div>
         <SubmitProof
           proofTree={tree}
           passToChild={handleChildData}
@@ -201,9 +225,8 @@ const SequentCalculus = () => {
           setRequestStatus={handleRequestUpdate}
         />
         {requestStatus == "proven" &&
-          expressionToLoad == formatInput("P->Q->P^Q") && (
             <RenderSC proofTree={tree} />
-          )}
+          }
         {requestStatus && <Indicator indicatorStatus={requestStatus} />}
       </div>
       <SelfSolveToggle />

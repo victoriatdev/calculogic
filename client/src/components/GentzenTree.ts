@@ -26,8 +26,7 @@ class ProofNode {
     if (data) {
       this.sequent = data.sequent;
       this.id = data.id;
-      this.proof =
-        data.proof != undefined ? data.proof.map((i) => this.addChild(i)) : [];
+      this.proof = data.proof.map((i) => this.addChild(i));
     }
   }
 

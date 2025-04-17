@@ -7,17 +7,24 @@ export function cn(...inputs: ClassValue[]) {
 
 export const formatInput = (input: string) => {
   var formattedInput = input;
-  console.log("trigger");
+  // console.log("trigger");
 
-  if (input.includes("->") || input.includes("=>")) {
+
+
+  if (input.includes("->")) {
     formattedInput = formattedInput.replaceAll("->", String.fromCodePoint(8594));
   }
+  if (input.includes("=>")) {
+    formattedInput = formattedInput.replaceAll("=>", String.fromCodePoint(8594));
+  }
+  
   if (input.includes("^") || input.includes("&")) {
     formattedInput = formattedInput.replaceAll(
       /[\^&]/g,
       String.fromCodePoint(8743)
     );
   }
+  
   if (input.includes("v") || input.includes("V") || input.includes("||")) {
     formattedInput = formattedInput.replaceAll(
       /[vV||]/g,
@@ -44,6 +51,27 @@ export const formatInput = (input: string) => {
       "exists",
       String.fromCodePoint(8707)
     );
+  }
+
+  // LaTeX Support
+  if (input.includes("\\TO")) {
+    formattedInput = formattedInput.replaceAll("\\TO", String.fromCodePoint(8594))
+  }
+
+  if (input.includes("\\LOR")) {
+    formattedInput = formattedInput.replaceAll("\\LOR", String.fromCodePoint(8744))
+  }
+
+  if (input.includes("\\LAND")) {
+    formattedInput = formattedInput.replaceAll("\\LAND", String.fromCodePoint(8743))
+  }
+
+  // if (input.includes("\\VDASH")) {
+  //   formattedInput = formattedInput.replaceAll("\\VDASH", String.fromCodePoint(8866))
+  // }
+
+  if (input.includes("\\NEG")) {
+    formattedInput = formattedInput.replaceAll("\\NEG", String.fromCodePoint(172))
   }
 
   return formattedInput.toUpperCase();

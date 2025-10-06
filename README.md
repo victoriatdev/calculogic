@@ -1,5 +1,4 @@
 # Calculogic
-## What is Calculogic
 A full-stack application built on React and Go in order to help students solve their logical problems, with a particular focus on classical natural deduction and sequent calculus.
 
 ## Prerequisites
